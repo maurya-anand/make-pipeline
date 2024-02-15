@@ -1,2 +1,6 @@
 data
 notes-comments.txt
+results-*/
+*.fastq.gz
+*.fa
+Makefile
