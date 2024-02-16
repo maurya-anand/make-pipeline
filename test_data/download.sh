@@ -9,4 +9,10 @@ if [ ! -f "Homo_sapiens.GRCh38.dna.primary_assembly.fa" ]; then
     gunzip Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
 fi
 
+# downsampling the downloaded fastq
+seqtk sample test_data/HG002.fastq.gz 0.1 > test_data/HG002-downsample-0.1.fastq
+gzip test_data/HG002-downsample-0.1.fastq
+
 echo "Test data downloaded in: $SCRIPT_DIR"
+
+echo "Try: make reads_fastq_gz=test_data/HG002-downsample-0.1.fastq.gz genome_ref=test_data/Homo_sapiens.GRCh38.dna.primary_assembly.fa file_label=demo"
