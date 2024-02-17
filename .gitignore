@@ -1,6 +1,6 @@
 data
 notes-comments.txt
 results-*/
-*.fastq.gz
+*.fastq*
 *.fa
 Makefile
