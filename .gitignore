@@ -3,4 +3,3 @@ notes-comments.txt
 results-*/
 *.fastq*
 *.fa
-Makefile
