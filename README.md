@@ -75,7 +75,9 @@ Before running the Makefile, you need to download the necessary data. This can b
 To run the script, navigate to the directory containing the script and use the following command:
 
 ```{bash}
-bash download.sh
+cd make-pipeline
+
+bash test_data/download.sh
 ```
 
 After running the script, you should see the following files in your current directory:
