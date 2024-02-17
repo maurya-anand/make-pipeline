@@ -40,7 +40,7 @@ make
 
 Output:
 ```{bash}
-Usage: make [TARGET] reads_fastq_gz=<path> file_label=<label> [other options]
+Usage: make [TARGET] reads_fastq_gz=<path> file_label=<label> genome_ref=<path> vep_cache=<path> threads=<integer>
 
 Targets: (default: all)
   alignReads callSmallVars callStructuralVars phaseVars annotateVars
@@ -48,14 +48,22 @@ Targets: (default: all)
 Options:
   reads_fastq_gz=<path>    Path to the reads_fastq_gz file (required)
   file_label=<label>       Label for the file (required)
-  genome_ref=<path>        Path to the genome_ref file (optional)
-  vep_cache=<path>         Path to the vep_cache file (optional)
+  genome_ref=<path>        Path to the genome_ref file (required)
+  vep_cache=<path>         Path to the vep_cache file (required)
+  output=<path>            Path to the output directory (optional). Default: /home/anand/Documents/aspire-files/data-documents/make-pipeline
+  threads=<integer>        Number of threads (optional). Default: 12
   -n                       dry-run [simulation of the build process without actually executing the commands] (optional)
 
 Example:
-  make reads_fastq_gz=g2.fastq.gz file_label=test -n
-  make reads_fastq_gz=g2.fastq.gz file_label=test -n
-  make alignReads reads_fastq_gz=g2.fastq.gz file_label=test -n
+
+  >To run all the steps:
+  make reads_fastq_gz=./test_data/HG002-downsample-0.1.fastq.gz file_label=HG002 genome_ref=./test_data/Homo_sapiens.GRCh38.dna.chromosome.22.fa vep_cache=./vep_cache threads=4
+
+  >Dry run:
+  make reads_fastq_gz=./test_data/HG002-downsample-0.1.fastq.gz file_label=HG002 genome_ref=./test_data/Homo_sapiens.GRCh38.dna.chromosome.22.fa vep_cache=./vep_cache threads=4 -n
+
+  >To run a single target:
+  make alignReads reads_fastq_gz=./test_data/HG002-downsample-0.1.fastq.gz file_label=HG002 genome_ref=./test_data/Homo_sapiens.GRCh38.dna.chromosome.22.fa vep_cache=./vep_cache threads=4
 ```
 
 ## Example
