@@ -14,5 +14,5 @@ seqtk sample HG002.fastq.gz 0.1 > HG002-downsample-0.1.fastq
 gzip HG002-downsample-0.1.fastq
 
 echo "Test data downloaded in: $SCRIPT_DIR"
-
-echo "Try: make reads_fastq_gz=test_data/HG002-downsample-0.1.fastq.gz genome_ref=test_data/Homo_sapiens.GRCh38.dna.chromosome.22.fa file_label=demo"
+echo "If you intend to run the entire pipeline, including the annotation step, please specify the VEP cache directory. If the annotation step is not required, you can run the appropriate target as shown in the help message."
+echo "Try: make reads_fastq_gz=./test_data/HG002-downsample-0.1.fastq.gz file_label=HG002 genome_ref=./test_data/Homo_sapiens.GRCh38.dna.chromosome.22.fa vep_cache=./vep_cache threads=4"
