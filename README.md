@@ -11,41 +11,26 @@ Ensure that the following tools are installed:
 - seqkit
 - whatshap
 
-> [!TIP]
+> [!IMPORTANT]
 > Please note that Docker is required to run certain tools like deepvariant and ensembl-vep which are executed within Docker containers.
 
+## Running the Pipeline
 
-## Example usage
+The pipeline requires the following inputs:
+- `reads_fastq_gz`
+- `file_label`-
+- `genome_ref`
+- `vep_cache`
 
-### Downloading the Data
+> [!WARNING]
+> If you intend to run the entire pipeline, including the annotation step, please specify the VEP cache directory. If the annotation step is not required, you can run the appropriate target as shown in the help message.
 
-Before running the Makefile, you need to download the necessary data. This can be done using the `download.sh` script provided in the `test_data` directory. This script will download a fastq file and a reference genome if they do not already exist in the current directory. It will also downsample the fastq file.
+To run the pipeline, use the following command:
 
-To run the script, navigate to the directory containing the script and use the following command:
-
-```{bash}
-bash download.sh
+```bash
+make reads_fastq_gz=./test_data/HG002-downsample-0.1.fastq.gz file_label=HG002 genome_ref=./test_data/Homo_sapiens.GRCh38.dna.chromosome.22.fa vep_cache=./vep_cache threads=4
 ```
-
-After running the script, you should see the following files in your current directory:
-
-- `HG002.fastq.gz`: The original fastq file.
-- `Homo_sapiens.GRCh38.dna.primary_assembly.fa`: The reference genome.
-- `HG002-downsample-0.1.fastq.gz`: The downsampled fastq file.
-
-### Execution
-
-You can then use the files downloaded in the previous step as inputs to the `Makefile`. For example:
-
-```{bash}
-cd make-pipeline
-
-make reads_fastq_gz=test_data/HG002-downsample-0.1.fastq.gz genome_ref=test_data/Homo_sapiens.GRCh38.dna.primary_assembly.fa file_label=demo
-```
-
-This command will run the Makefile with the downsampled fastq file and the reference genome, and it will label the output files with `results-demo`.
-
-### Complete usage
+## Complete usage
 
 Type the following command to see the full help message.
 
@@ -72,3 +57,33 @@ Example:
   make reads_fastq_gz=g2.fastq.gz file_label=test -n
   make alignReads reads_fastq_gz=g2.fastq.gz file_label=test -n
 ```
+
+## Example
+
+### Downloading the test data
+
+Before running the Makefile, you need to download the necessary data. This can be done using the `download.sh` script provided in the `test_data` directory. This script will download a fastq file and a reference genome if they do not already exist in the current directory. It will also downsample the fastq file.
+
+To run the script, navigate to the directory containing the script and use the following command:
+
+```{bash}
+bash download.sh
+```
+
+After running the script, you should see the following files in your current directory:
+
+- `HG002.fastq.gz`: The original fastq file.
+- `Homo_sapiens.GRCh38.dna.primary_assembly.fa`: The reference genome.
+- `HG002-downsample-0.1.fastq.gz`: The downsampled fastq file.
+
+### Execution
+
+You can then use the files downloaded in the previous step as inputs to the `Makefile`. For example:
+
+```{bash}
+cd make-pipeline
+
+make reads_fastq_gz=test_data/HG002-downsample-0.1.fastq.gz genome_ref=test_data/Homo_sapiens.GRCh38.dna.primary_assembly.fa file_label=demo
+```
+
+This command will run the Makefile with the downsampled fastq file and the reference genome, and it will label the output files with `results-demo`.
