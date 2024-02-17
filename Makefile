@@ -115,7 +115,7 @@ callSmallVars: alignReads
 				--ref /temp/genome_reference.fasta \
 				--reads /input/${file_label}_aligned.bam \
 				--output_vcf /output/${file_label}_ALL_variants.vcf.gz >> ${STEP2_DIR}/${file_label}_variant_calling.log 2>&1; \
-			bcftools view -f PASS ${STEP2_DIR}/${file_label}_ALL_variants.vcf.gz -Oz -o ${STEP2_DIR}/${file_label}_PASS_variants.vcf.gz >> ${STEP2_DIR}/{file_label}_variant_calling.log 2>&1; \
+			bcftools view -f PASS ${STEP2_DIR}/${file_label}_ALL_variants.vcf.gz -Oz -o ${STEP2_DIR}/${file_label}_PASS_variants.vcf.gz >> ${STEP2_DIR}/${file_label}_variant_calling.log 2>&1; \
 			bcftools norm ${STEP2_DIR}/${file_label}_PASS_variants.vcf.gz -f ${TEMP_DIR}/genome_reference.fasta -m -any -Oz -o ${STEP2_DIR}/${file_label}_PASS_NORM_variants.vcf.gz >> ${STEP2_DIR}/${file_label}_variant_calling.log 2>&1; \
 			tabix -f -p vcf ${STEP2_DIR}/${file_label}_PASS_NORM_variants.vcf.gz; \
 		fi; \
