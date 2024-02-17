@@ -1,4 +1,4 @@
-# make-pipeline
+# Variant calling pipeline for Pacbio Hifi reads
 
 ## Prerequisites
 Ensure that the following tools are installed:
