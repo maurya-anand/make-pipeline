@@ -36,6 +36,7 @@ STEP5_DIR := $(output)/05_annotateVars
 TEMP_DIR := $(output)/temp
 
 all: alignReads callSmallVars callStructuralVars phaseVars annotateVars
+	multiqc ${output} --outdir ${output} --force
 	@printf "\nPipeline completed.\n\nResults dir: ${output}\n";
 
 help:
@@ -114,9 +115,9 @@ callSmallVars: alignReads
 				--num_shards ${threads} \
 				--ref /temp/genome_reference.fasta \
 				--reads /input/${file_label}_aligned.bam \
-				--output_vcf /output/${file_label}_ALL_variants.vcf.gz >> ${STEP2_DIR}/${file_label}_variant_calling.log 2>&1; \
-			bcftools view -f PASS ${STEP2_DIR}/${file_label}_ALL_variants.vcf.gz -Oz -o ${STEP2_DIR}/${file_label}_PASS_variants.vcf.gz >> ${STEP2_DIR}/${file_label}_variant_calling.log 2>&1; \
-			bcftools norm ${STEP2_DIR}/${file_label}_PASS_variants.vcf.gz -f ${TEMP_DIR}/genome_reference.fasta -m -any -Oz -o ${STEP2_DIR}/${file_label}_PASS_NORM_variants.vcf.gz >> ${STEP2_DIR}/${file_label}_variant_calling.log 2>&1; \
+				--output_vcf /output/${file_label}_ALL_variants.vcf.gz >> ${STEP2_DIR}/stderr.stdout.log 2>&1; \
+			bcftools view -f PASS ${STEP2_DIR}/${file_label}_ALL_variants.vcf.gz -Oz -o ${STEP2_DIR}/${file_label}_PASS_variants.vcf.gz >> ${STEP2_DIR}/stderr.stdout.log 2>&1; \
+			bcftools norm ${STEP2_DIR}/${file_label}_PASS_variants.vcf.gz -f ${TEMP_DIR}/genome_reference.fasta -m -any -Oz -o ${STEP2_DIR}/${file_label}_PASS_NORM_variants.vcf.gz >> ${STEP2_DIR}/stderr.stdout.log 2>&1; \
 			tabix -f -p vcf ${STEP2_DIR}/${file_label}_PASS_NORM_variants.vcf.gz; \
 		fi; \
 	fi
@@ -128,13 +129,13 @@ callStructuralVars: alignReads
 		chmod -R a+w $(STEP3_DIR); \
 		pbsv discover \
 			${STEP1_DIR}/${file_label}_aligned.bam \
-			${STEP3_DIR}/${file_label}_aligned.svsig.gz >> ${STEP3_DIR}/${file_label}_structural_variant_calling.log 2>&1; \
+			${STEP3_DIR}/${file_label}_aligned.svsig.gz >> ${STEP3_DIR}/stderr.stdout.log 2>&1; \
 		pbsv call \
 			${TEMP_DIR}/genome_reference.fasta \
 			${STEP3_DIR}/${file_label}_aligned.svsig.gz \
-			${STEP3_DIR}/${file_label}_ALL_structural_variants.vcf >> ${STEP3_DIR}/${file_label}_structural_variant_calling.log 2>&1; \
-		bcftools view -f PASS ${STEP3_DIR}/${file_label}_ALL_structural_variants.vcf -Ov -o ${STEP3_DIR}/${file_label}_PASS_structural_variants.vcf >> ${STEP3_DIR}/${file_label}_structural_variant_calling.log 2>&1; \
-		bcftools norm ${STEP3_DIR}/${file_label}_PASS_structural_variants.vcf -f ${TEMP_DIR}/genome_reference.fasta -m -any -Ov -o ${STEP3_DIR}/${file_label}_PASS_NORM_structural_variants.vcf >> ${STEP3_DIR}/${file_label}_structural_variant_calling.log 2>&1; \
+			${STEP3_DIR}/${file_label}_ALL_structural_variants.vcf >> ${STEP3_DIR}/stderr.stdout.log 2>&1; \
+		bcftools view -f PASS ${STEP3_DIR}/${file_label}_ALL_structural_variants.vcf -Ov -o ${STEP3_DIR}/${file_label}_PASS_structural_variants.vcf >> ${STEP3_DIR}/stderr.stdout.log 2>&1; \
+		bcftools norm ${STEP3_DIR}/${file_label}_PASS_structural_variants.vcf -f ${TEMP_DIR}/genome_reference.fasta -m -any -Ov -o ${STEP3_DIR}/${file_label}_PASS_NORM_structural_variants.vcf >> ${STEP3_DIR}/stderr.stdout.log 2>&1; \
 	fi
 	@printf "\nFinished calling structural variants.\n";
 
@@ -143,17 +144,17 @@ phaseVars: callSmallVars
 		mkdir -p $(STEP4_DIR); \
 		chmod -R a+w $(STEP4_DIR); \
 		if [ $$(zcat ${STEP2_DIR}/${file_label}_PASS_NORM_variants.vcf.gz | grep -v "#" | wc -l) -eq 0 ]; then \
-			touch ${STEP4_DIR}/${file_label}_PASS_NORM_PHASED_variants.vcf ${STEP4_DIR}/${file_label}_variant_phasing.log; \
+			touch ${STEP4_DIR}/${file_label}_PASS_NORM_PHASED_variants.vcf ${STEP4_DIR}/${file_label}_variant_phasing.tsv; \
 		else \
 			whatshap phase \
 				${STEP2_DIR}/${file_label}_PASS_NORM_variants.vcf.gz \
 				${STEP1_DIR}/${file_label}_aligned.bam \
 				--reference=${TEMP_DIR}/genome_reference.fasta \
 				--indels \
-				--output ${STEP4_DIR}/${file_label}_PASS_NORM_PHASED_variants.vcf >> ${STEP4_DIR}/${file_label}_variant_phasing.log 2>&1; \
+				--output ${STEP4_DIR}/${file_label}_PASS_NORM_PHASED_variants.vcf >> ${STEP4_DIR}/stderr.stdout.log 2>&1; \
 			whatshap stats \
 				${STEP4_DIR}/${file_label}_PASS_NORM_PHASED_variants.vcf \
-				--tsv=${STEP4_DIR}/${file_label}_variant_phasing.log >> ${STEP4_DIR}/${file_label}_variant_phasing.log 2>&1; \
+				--tsv=${STEP4_DIR}/${file_label}_variant_phasing.tsv >> ${STEP4_DIR}/stderr.stdout.log 2>&1; \
 		fi; \
 	fi
 	@printf "\nFinished phasing small variants.\n";
@@ -167,7 +168,7 @@ annotateVars: phaseVars
 		mkdir -p $(STEP5_DIR); \
 		chmod -R a+w $(STEP5_DIR); \
 		if [ $$(grep -v "#" ${STEP4_DIR}/${file_label}_PASS_NORM_PHASED_variants.vcf | wc -l) -eq 0 ]; then \
-			touch ${STEP5_DIR}/${file_label}_PASS_NORM_PHASED_ANNOTATED_variants.vcf ${STEP5_DIR}/${file_label}_vep_stats.log; \
+			touch ${STEP5_DIR}/${file_label}_PASS_NORM_PHASED_ANNOTATED_variants.vcf ${STEP5_DIR}/${file_label}_vep_stats.txt; \
 		else \
 			docker run \
 				-v ${STEP4_DIR}:/input \
@@ -179,7 +180,7 @@ annotateVars: phaseVars
 				--input_file /input/${file_label}_PASS_NORM_PHASED_variants.vcf \
 				--vcf \
 				--output_file /output/${file_label}_PASS_NORM_PHASED_ANNOTATED_variants.vcf \
-				--stats_file /output/${file_label}_vep_stats.log \
+				--stats_file /output/${file_label}_vep_stats.txt \
 				--stats_text \
 				--cache \
 				--dir_cache /vep_cache \
@@ -187,7 +188,7 @@ annotateVars: phaseVars
 				--fasta /temp/genome_reference.fasta \
 				--numbers --offline --hgvs --shift_hgvs 0 --terms SO --symbol \
 				--sift b --polyphen b --total_length --ccds --canonical --biotype \
-				--protein --xref_refseq --mane --pubmed --af --max_af --af_1kg --af_gnomadg >> ${STEP5_DIR}/${file_label}_variant_annotation.log 2>&1; \
+				--protein --xref_refseq --mane --pubmed --af --max_af --af_1kg --af_gnomadg >> ${STEP5_DIR}/stderr.stdout.log 2>&1; \
 			echo "chrom\tpos\tref\talt\tgenotype\tgenotype_qual\tread_depth\tallele_depth\tvariant_allele_frac\tgenotype_likelihood\tVEP_Allele\tConsequence\tIMPACT\tSYMBOL\tGene\tFeature_type\tFeature\tBIOTYPE\tEXON\tINTRON\tHGVSc\tHGVSp\tcDNA_position\tCDS_position\tProtein_position\tAmino_acids\tCodons\tExisting_variation\tDISTANCE\tSTRAND\tFLAGS\tSYMBOL_SOURCE\tHGNC_ID\tCANONICAL\tMANE_SELECT\tMANE_PLUS_CLINICAL\tCCDS\tENSP\tRefSeq\tSIFT\tPolyPhen\tHGVS_OFFSET\tAF\tAFR_AF\tAMR_AF\tEAS_AF\tEUR_AF\tSAS_AF\tgnomADg_AF\tgnomADg_AFR_AF\tgnomADg_AMI_AF\tgnomADg_AMR_AF\tgnomADg_ASJ_AF\tgnomADg_EAS_AF\tgnomADg_FIN_AF\tgnomADg_MID_AF\tgnomADg_NFE_AF\tgnomADg_OTH_AF\tgnomADg_SAS_AF\tMAX_AF\tMAX_AF_POPS\tCLIN_SIG\tSOMATIC\tPHENO\tPUBMED" > ${STEP5_DIR}/${file_label}_PASS_NORM_PHASED_ANNOTATED_variants.tsv; \
 			bcftools +split-vep ${STEP5_DIR}/${file_label}_PASS_NORM_PHASED_ANNOTATED_variants.vcf -f '%CHROM\t%POS\t%REF\t%ALT\t[%GT\t%GQ\t%DP\t%AD\t%VAF\t%PL]\t%CSQ\n' -d -A tab >> ${STEP5_DIR}/${file_label}_PASS_NORM_PHASED_ANNOTATED_variants.tsv; \
 		fi; \
